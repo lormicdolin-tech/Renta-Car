@@ -1,0 +1,140 @@
+<resources>
+    <string name="app_name">RentA</string>
+    <string name="login_title">Login</string>
+    <string name="signin_to_continue">Sign in to continue</string>
+    <string name="username_hint">Username or Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Log in</string>
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="signup">Signup</string>
+    <string name="login_as_guest">Continue as Guest</string>
+    <string name="signup_title">Create Account</string>
+    <string name="signup_subtitle">Join us to start renting</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="email_hint">Email Address</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="login">Login</string>
+    <string name="error_empty_username">Please enter your username</string>
+    <string name="error_empty_password">Please enter your password</string>
+    <string name="error_password_length">Password must be at least 6 characters</string>
+    <string name="error_empty_name">Please enter your full name</string>
+    <string name="error_empty_email">Please enter your email</string>
+    <string name="error_invalid_email">Please enter a valid email address</string>
+    <string name="error_empty_confirm_password">Please confirm your password</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_invalid_phone">Please enter a valid Philippine phone number (e.g., 09123456789)</string>
+    <string name="error_empty_phone">Phone number is required</string>
+
+    <!-- Navigation Strings -->
+    <string name="nav_home">Home</string>
+    <string name="nav_bookings">My Bookings</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_location">Location</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_logout">Logout</string>
+
+    <!-- Home Fragment Strings -->
+    <string name="available_cars">Available Cars</string>
+    <string name="car_1_name">Toyota Vios</string>
+    <string name="car_1_desc">Reliable 5-seater sedan, perfect for city driving and fuel efficiency.</string>
+    <string name="car_1_price">₱2,000/day</string>
+
+    <string name="car_2_name">Mitsubishi Mirage G4</string>
+    <string name="car_2_desc">Compact and extremely fuel-efficient, ideal for budget-conscious travelers.</string>
+    <string name="car_2_price">₱1,800/day</string>
+
+    <string name="car_3_name">Toyota Innova</string>
+    <string name="car_3_desc">Versatile 7-seater MPV with a powerful diesel engine for family trips.</string>
+    <string name="car_3_price">₱3,500/day</string>
+
+    <string name="car_4_name">Toyota Fortuner</string>
+    <string name="car_4_desc">Premium 7-seater SUV with 4x4 capability, perfect for any terrain.</string>
+    <string name="car_4_price">₱5,000/day</string>
+
+    <string name="car_5_name">Toyota Wigo</string>
+    <string name="car_5_desc">Nimble city hatchback, easy to park and very economical on gas.</string>
+    <string name="car_5_price">₱1,500/day</string>
+
+    <string name="car_6_name">Nissan NV350 Urvan</string>
+    <string name="car_6_desc">Large 15-seater passenger van, the ultimate choice for group tours.</string>
+    <string name="car_6_price">₱4,500/day</string>
+
+    <string name="car_7_name">Toyota Hiace Grandia</string>
+    <string name="car_7_desc">Elite 12-seater van with captain seats and premium comfort features.</string>
+    <string name="car_7_price">₱6,000/day</string>
+
+    <string name="not_available">Not Available</string>
+    <string name="available">Available</string>
+    <string name="details_button">Details</string>
+
+    <!-- Bookings Fragment Strings -->
+    <string name="my_bookings_title">Current Bookings</string>
+    <string name="no_bookings">You have no active bookings.</string>
+
+    <!-- Profile Fragment Strings -->
+    <string name="profile_title">User Profile</string>
+    <string name="profile_name">John Doe</string>
+    <string name="profile_email">john.doe@example.com</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="hint_full_name">Full Name</string>
+    <string name="hint_email">Email Address</string>
+    <string name="account_statistics">Account Statistics</string>
+    <string name="stats_rentals_count">12</string>
+    <string name="stats_rentals_label">Rentals</string>
+    <string name="stats_rating_value">4.9</string>
+    <string name="stats_rating_label">Rating</string>
+
+    <!-- Car Details Strings -->
+    <string name="specifications_title">Vehicle Specifications</string>
+    <string name="spec_power_label">Fuel System</string>
+    <string name="spec_power_electric">Diesel/Gas</string>
+    <string name="spec_seats_label">Capacity</string>
+    <string name="spec_seats_value">5-15 Persons</string>
+    <string name="spec_speed_label">Drivetrain</string>
+    <string name="spec_speed_value">Auto/Manual</string>
+    <string name="spec_accel_label">Current State</string>
+    <string name="spec_accel_value">Pristine</string>
+    <string name="spec_fuel_gasoline">Gasoline</string>
+    <string name="spec_seats_5">5 Persons</string>
+    <string name="spec_trans_auto">Automatic</string>
+    <string name="spec_cond_pristine">Pristine</string>
+    <string name="car_image_desc">Car Image</string>
+    <string name="fuel_icon_desc">Fuel Icon</string>
+    <string name="seats_icon_desc">Seats Icon</string>
+    <string name="transmission_icon_desc">Transmission Icon</string>
+    <string name="condition_icon_desc">Condition Icon</string>
+    <string name="description_title">Description</string>
+    <string name="car_default_desc">Reliable and comfortable Philippine favorite, perfect for city driving or long trips with excellent fuel efficiency and modern features.</string>
+    <string name="book_now_button">Book Now</string>
+    <string name="select_dates">Select Dates</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="total_cost">Total Cost: %s</string>
+    <string name="booking_confirmed">Booking Confirmed!</string>
+    <string name="please_select_dates">Please select both start and end dates</string>
+    <string name="total_paid">Total Paid</string>
+    <string name="booking_information">Booking Information</string>
+    <string name="phone_number_hint">Phone Number (e.g. 09123456789)</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="payment_note">The remaining balance must be paid at the car rental site upon vehicle pickup to avoid false booking, Thank you.</string>
+    <string name="downpayment_label">Downpayment (20%%): %s</string>
+    <string name="confirm_booking">Confirm Booking</string>
+    <string name="cancel">Cancel</string>
+    <string name="payment_method_gcash">GCash</string>
+    <string name="payment_method_cash">Cash (at Counter)</string>
+    <string name="downpayment_paid">Downpayment Paid</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="map_placeholder_desc">Map Placeholder</string>
+    <string name="location_marker_desc">Location Marker</string>
+    <string name="renta_main_hub">RentA Main Hub</string>
+    <string name="davao_city_philippines">Digos City, Philippines</string>
+    <string name="address_icon_desc">Address Icon</string>
+    <string name="main_hub_address">UM Digos College, Roxas Ext, Digos City, 8002</string>
+    <string name="phone_icon_desc">Phone Icon</string>
+    <string name="main_hub_phone">+63 912 345 6789</string>
+    <string name="hours_icon_desc">Hours Icon</string>
+    <string name="main_hub_hours">Open Daily: 8:00 AM - 8:00 PM</string>
+    <string name="get_directions">Get Directions</string>
+</resources>
