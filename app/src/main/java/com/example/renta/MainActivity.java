@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
-                    proceedToHome("Welcome to RentA!");
+                    proceedToHome("Welcome to RentA Car!");
                 } else {
                     Toast.makeText(MainActivity.this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }

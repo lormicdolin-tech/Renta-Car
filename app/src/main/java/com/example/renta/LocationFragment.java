@@ -20,7 +20,7 @@ public class LocationFragment extends Fragment {
         MaterialButton directionsBtn = view.findViewById(R.id.get_directions_btn);
         directionsBtn.setOnClickListener(v -> {
             // Coordinate for UM Digos College
-            String uri = "geo:6.7486,125.3565?q=6.7486,125.3565(RentA+Main+Hub)";
+            String uri = "geo:6.7486,125.3565?q=6.7486,125.3565(RentA+Car+Main+Hub)";
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
             intent.setPackage("com.google.android.apps.maps");
             

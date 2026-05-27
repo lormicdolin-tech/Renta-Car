@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RentA</string>
+    <string name="app_name">RentA Car</string>
     <string name="login_title">Login</string>
     <string name="signin_to_continue">Sign in to continue</string>
     <string name="username_hint">Username or Email</string>
@@ -35,7 +35,7 @@
     <string name="nav_logout">Logout</string>
 
     <!-- Home Fragment Strings -->
-    <string name="welcome_title">Welcome to RentA</string>
+    <string name="welcome_title">Welcome to RentA Car</string>
     <string name="welcome_subtitle">Find the perfect ride for your trip</string>
     <string name="category_all">All</string>
     <string name="category_sedan">Sedan</string>
@@ -161,7 +161,7 @@
     <string name="total_amount">Total Amount</string>
     <string name="map_placeholder_desc">Map Placeholder</string>
     <string name="location_marker_desc">Location Marker</string>
-    <string name="renta_main_hub">RentA Main Hub</string>
+    <string name="renta_main_hub">RentA Car Main Hub</string>
     <string name="davao_city_philippines">Digos City, Philippines</string>
     <string name="address_icon_desc">Address Icon</string>
     <string name="main_hub_address">UM Digos College, Roxas Ext, Digos City, 8002</string>
