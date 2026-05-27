@@ -6,7 +6,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,9 +23,15 @@ import java.util.Locale;
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
 
     private final List<Booking> bookings;
+    private boolean isAdmin = false;
 
     public BookingAdapter(List<Booking> bookings) {
         this.bookings = bookings;
+    }
+
+    public BookingAdapter(List<Booking> bookings, boolean isAdmin) {
+        this.bookings = bookings;
+        this.isAdmin = isAdmin;
     }
 
     /**
@@ -53,6 +62,71 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         // Format currency values with comma separators and peso sign
         holder.downPayment.setText(String.format(Locale.getDefault(), "₱%,.2f", booking.getDownPayment()));
         holder.totalCost.setText(String.format(Locale.getDefault(), "₱%,.2f", booking.getTotalCost()));
+        
+        if (booking.getStatus() != null) {
+            holder.status.setText(booking.getStatus());
+            if (booking.getStatus().equals("Confirmed")) {
+                holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.available_green));
+            } else if (booking.getStatus().equals("Cancelled")) {
+                holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.error_red));
+            } else {
+                holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_secondary));
+            }
+        }
+
+        if (isAdmin) {
+            holder.customerInfo.setVisibility(View.VISIBLE);
+            String guestLabel = booking.isGuestBooking() ? " [GUEST]" : "";
+            
+            StringBuilder info = new StringBuilder();
+            info.append(booking.getCustomerName() != null ? booking.getCustomerName() : "Unknown").append(guestLabel).append("\n");
+            info.append("Phone: ").append(booking.getPhoneNumber()).append("\n");
+            info.append("License: ").append(booking.getLicenseNumber() != null ? booking.getLicenseNumber() : "N/A").append("\n");
+            info.append("Address: ").append(booking.getAddress() != null ? booking.getAddress() : "N/A");
+            
+            holder.customerInfo.setText(info.toString());
+            
+            holder.deleteBtn.setVisibility(View.VISIBLE);
+            holder.deleteBtn.setOnClickListener(v -> {
+                if (booking.getBookingId() != null) {
+                    FirebaseDatabase.getInstance().getReference().child("bookings")
+                        .child(booking.getBookingId()).removeValue();
+                }
+            });
+
+            holder.itemView.setOnClickListener(v -> {
+                // Potential to add status update dialog here
+                showStatusUpdateDialog(v.getContext(), booking);
+            });
+        } else {
+            holder.customerInfo.setVisibility(View.GONE);
+            holder.deleteBtn.setVisibility(View.GONE);
+            holder.itemView.setOnClickListener(null);
+        }
+    }
+
+    private void showStatusUpdateDialog(android.content.Context context, Booking booking) {
+        String[] statuses = {"Pending", "Confirmed", "Cancelled"};
+        int checkedItem = 0;
+        for (int i = 0; i < statuses.length; i++) {
+            if (statuses[i].equals(booking.getStatus())) {
+                checkedItem = i;
+                break;
+            }
+        }
+
+        new androidx.appcompat.app.AlertDialog.Builder(context)
+            .setTitle("Update Booking Status")
+            .setSingleChoiceItems(statuses, checkedItem, (dialog, which) -> {
+                String newStatus = statuses[which];
+                if (booking.getBookingId() != null) {
+                    FirebaseDatabase.getInstance().getReference().child("bookings")
+                        .child(booking.getBookingId()).child("status").setValue(newStatus);
+                }
+                dialog.dismiss();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
     /**
@@ -67,8 +141,9 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
      * BookingViewHolder: Holds references to the views for a single booking item.
      * This improves performance by avoiding frequent calls to findViewById.
      */
-    static class BookingViewHolder extends RecyclerView.ViewHolder {
-        TextView carName, dates, totalCost, paymentMethod, downPayment;
+    public static class BookingViewHolder extends RecyclerView.ViewHolder {
+        TextView carName, dates, totalCost, paymentMethod, downPayment, status, customerInfo;
+        View deleteBtn;
 
         public BookingViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -77,6 +152,9 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             totalCost = itemView.findViewById(R.id.booking_total_cost);
             paymentMethod = itemView.findViewById(R.id.booking_payment_method);
             downPayment = itemView.findViewById(R.id.booking_downpayment);
+            status = itemView.findViewById(R.id.booking_status);
+            deleteBtn = itemView.findViewById(R.id.booking_delete_btn);
+            customerInfo = itemView.findViewById(R.id.booking_customer_info);
         }
     }
 }

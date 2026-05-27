@@ -13,7 +13,6 @@
         android:orientation="vertical"
         android:background="@color/primary">
 
-        <!-- HEADER SECTION: Branding -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="280dp">
@@ -24,7 +23,6 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/bg" />
 
-            <!-- Dark Overlay for better logo contrast -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -39,7 +37,6 @@
                 android:elevation="8dp"/>
         </FrameLayout>
 
-        <!-- SIGNUP CARD: Bottom Sheet Effect -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -71,7 +68,6 @@
                     android:textColor="#757575"
                     android:layout_marginBottom="24dp" />
 
-                <!-- FULL NAME -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/fullNameInputLayout"
                     android:layout_width="match_parent"
@@ -94,7 +90,6 @@
                         android:textColor="@color/black" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- EMAIL -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/emailInputLayout"
                     android:layout_width="match_parent"
@@ -117,7 +112,6 @@
                         android:textColor="@color/black" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- PASSWORD -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/passwordInputLayout"
                     android:layout_width="match_parent"
@@ -141,7 +135,6 @@
                         android:textColor="@color/black" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- CONFIRM PASSWORD -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/confirmPasswordInputLayout"
                     android:layout_width="match_parent"
@@ -165,7 +158,6 @@
                         android:textColor="@color/black" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- SIGNUP BUTTON -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/signupBtn"
                     android:layout_width="match_parent"
@@ -179,7 +171,6 @@
                     app:cornerRadius="12dp"
                     android:elevation="4dp"/>
 
-                <!-- FOOTER -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -205,7 +196,6 @@
                         android:focusable="true"
                         android:background="?attr/selectableItemBackground"/>
                 </LinearLayout>
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

@@ -8,6 +8,13 @@ public class User {
     private String name;
     private String email;
     private String password;
+    private boolean admin;
+
+    /**
+     * Default constructor required for Firebase deserialization.
+     */
+    public User() {
+    }
 
     /**
      * Constructor for basic user creation with a default password.
@@ -16,6 +23,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = "123456"; // Default password for placeholder accounts
+        this.admin = false;
     }
 
     /**
@@ -25,6 +33,15 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.admin = false;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
     // Getters and Setters with brief descriptions

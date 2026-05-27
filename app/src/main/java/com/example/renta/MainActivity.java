@@ -6,20 +6,22 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
- * MainActivity: Handles user login (Local & Guest).
+ * MainActivity: The entry point of the application.
+ * Handles user login, specific Admin access, and Guest entry.
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private TextInputEditText nameEdit, passwordEdit;
     private MaterialButton loginBtn, guestLoginBtn;
     private TextView signupBtn;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        mAuth = FirebaseAuth.getInstance();
 
         nameInputLayout = findViewById(R.id.nameInputLayout);
         passwordInputLayout = findViewById(R.id.passwordInputLayout);
@@ -49,72 +54,148 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Regular Login Button
         loginBtn.setOnClickListener(v -> {
             if (validateInputs()) {
                 String email = nameEdit.getText().toString().trim();
                 String password = passwordEdit.getText().toString().trim();
 
-                UserManager userManager = new UserManager(this);
-                User savedUser = userManager.getUser();
-
-                if (email.equals(savedUser.getEmail()) && password.equals(savedUser.getPassword())) {
-                    Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-                    startActivity(intent);
-                    finish();
+                if (email.equalsIgnoreCase("admin@renta.com")) {
+                    handleAdminLogin(email, password);
                 } else {
-                    Toast.makeText(MainActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                    handleUserLogin(email, password);
                 }
             }
         });
 
-        guestLoginBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        // Guest Login Button
+        guestLoginBtn.setOnClickListener(v -> handleGuestLogin());
+
+        // Development/Quick Admin Button removed as requested
+        /*
+        if (adminLoginBtn != null) {
+            adminLoginBtn.setOnClickListener(v -> handleAdminLogin("admin@renta.com", "admin123"));
+        }
+        */
 
         signupBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SignupActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MainActivity.this, SignupActivity.class));
         });
+    }
+
+    private void handleAdminLogin(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    // Update admin flag in database on every successful login to be safe
+                    String uid = mAuth.getCurrentUser().getUid();
+                    FirebaseDatabase.getInstance().getReference().child("users")
+                        .child(uid).child("isAdmin").setValue(true);
+                    proceedToAdmin();
+                } else {
+                    if (task.getException() instanceof FirebaseAuthInvalidUserException) {
+                        // Admin doesn't exist, create it
+                        mAuth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(this, createStack -> {
+                                if (createStack.isSuccessful()) {
+                                    String uid = mAuth.getCurrentUser().getUid();
+                                    FirebaseDatabase.getInstance().getReference().child("users")
+                                        .child(uid).child("isAdmin").setValue(true);
+                                    proceedToAdmin();
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Admin Setup Failed: " + createStack.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            });
+                    } else {
+                        Toast.makeText(MainActivity.this, "Admin Error: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+    }
+
+    private void handleUserLogin(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    proceedToHome("Welcome to RentA!");
+                } else {
+                    Toast.makeText(MainActivity.this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+
+    private void handleGuestLogin() {
+        String guestEmail = "guest@renta.com";
+        String guestPass = "guest123";
+
+        mAuth.signInWithEmailAndPassword(guestEmail, guestPass)
+            .addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    proceedToHome("Browsing as Guest");
+                } else {
+                    // Create guest account if it doesn't exist
+                    mAuth.createUserWithEmailAndPassword(guestEmail, guestPass)
+                        .addOnCompleteListener(this, createStack -> {
+                            if (createStack.isSuccessful()) {
+                                proceedToHome("Guest session started");
+                            } else {
+                                // Fallback to Anonymous Auth (Must be enabled in Firebase Console)
+                                mAuth.signInAnonymously().addOnCompleteListener(anonTask -> {
+                                    if (anonTask.isSuccessful()) {
+                                        proceedToHome("Logged in as Anonymous Guest");
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Guest access unavailable. Check connection.", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        });
+                }
+            });
+    }
+
+    private void proceedToAdmin() {
+        Toast.makeText(this, "Admin Mode Active", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, AdminActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void proceedToHome(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void applyDarkMode() {
         SharedPreferences prefs = getSharedPreferences("renta_prefs", Context.MODE_PRIVATE);
         boolean isDarkMode = prefs.getBoolean("dark_mode", false);
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+        AppCompatDelegate.setDefaultNightMode(isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 
     private boolean validateInputs() {
-        boolean isValid = true;
-        String username = nameEdit.getText().toString().trim();
+        String email = nameEdit.getText().toString().trim();
         String password = passwordEdit.getText().toString().trim();
+        boolean valid = true;
 
-        if (username.isEmpty()) {
-            nameInputLayout.setError(getString(R.string.error_empty_email));
-            isValid = false;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(username).matches()) {
-            nameInputLayout.setError(getString(R.string.error_invalid_email));
-            isValid = false;
+        if (email.isEmpty()) {
+            nameInputLayout.setError("Email is required");
+            valid = false;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            nameInputLayout.setError("Invalid email format");
+            valid = false;
         } else {
             nameInputLayout.setError(null);
         }
 
-        if (password.isEmpty()) {
-            passwordInputLayout.setError(getString(R.string.error_empty_password));
-            isValid = false;
-        } else if (password.length() < 6) {
-            passwordInputLayout.setError(getString(R.string.error_password_length));
-            isValid = false;
+        if (password.length() < 6) {
+            passwordInputLayout.setError("Password must be at least 6 characters");
+            valid = false;
         } else {
             passwordInputLayout.setError(null);
         }
-
-        return isValid;
+        return valid;
     }
 }

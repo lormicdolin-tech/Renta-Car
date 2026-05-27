@@ -22,24 +22,17 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.os.Build;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import androidx.annotation.NonNull;
+import android.content.Intent;
 import androidx.core.content.ContextCompat;
 
 /**
  * CarDetailsActivity: Displays detailed information about a selected car and 
- * provides a booking system with date picking, cost calculation, and notifications.
+ * provides a booking system with date picking, tiered cost calculation, and notifications.
  */
 public class CarDetailsActivity extends AppCompatActivity {
 
-    private Long startDate;      // Rental start date in ms
-    private Long endDate;        // Rental end date in ms
+    private Long startDate;      // Rental start date in milliseconds
+    private Long endDate;        // Rental end date in milliseconds
     private MaterialButton startDateBtn;
     private MaterialButton endDateBtn;
     private TextView totalCostTv;
@@ -47,32 +40,26 @@ public class CarDetailsActivity extends AppCompatActivity {
     private String carPriceStr;
     private double dailyRate;
 
-    private String pendingNotifTitle;
-    private String pendingNotifMessage;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_car_details);
         
-        createNotificationChannel();
-
-        // Retrieve car data passed from HomeFragment via Intent
+        // Retrieve car data passed from the home screen
         carName = getIntent().getStringExtra("car_name");
         carPriceStr = getIntent().getStringExtra("car_price");
         if (carName == null) carName = "Toyota Vios";
         if (carPriceStr == null) carPriceStr = "₱2,000/day";
         
-        // Parse the daily rate string to a double for calculations
+        // Parse daily rate for calculations (e.g., "₱2,000/day" -> 2000.0)
         try {
-            // Remove ₱, commas, and "/day" to get the numeric value
             String cleanPrice = carPriceStr.replace("₱", "").replace(",", "").split("/")[0].trim();
             dailyRate = Double.parseDouble(cleanPrice);
         } catch (Exception e) {
-            dailyRate = 2000.0; // Fallback rate
+            dailyRate = 2000.0; // Fallback default rate
         }
 
-        // Initialize UI components
+        // Link UI components
         TextView carNameTv = findViewById(R.id.car_name_detail);
         TextView carPriceTv = findViewById(R.id.car_price_detail);
         TextView carDescTv = findViewById(R.id.car_description);
@@ -82,14 +69,14 @@ public class CarDetailsActivity extends AppCompatActivity {
         TextView transTv = findViewById(R.id.spec_trans_value);
         TextView condTv = findViewById(R.id.spec_cond_value);
 
-        // Display the retrieved car data
+        // Bind data to views
         carNameTv.setText(carName);
         carPriceTv.setText(carPriceStr);
 
         int imageResId = getIntent().getIntExtra("car_image", R.drawable.vios);
         carIv.setImageResource(imageResId);
         
-        // Set dynamic specifications
+        // Set specific car details
         String desc = getIntent().getStringExtra("car_desc");
         if (desc != null) carDescTv.setText(desc);
         
@@ -105,7 +92,7 @@ public class CarDetailsActivity extends AppCompatActivity {
         String cond = getIntent().getStringExtra("car_cond");
         if (cond != null) condTv.setText(cond);
 
-        // Set up the top toolbar with a back button
+        // Configure toolbar with back navigation
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -114,7 +101,7 @@ public class CarDetailsActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Booking system initialization
+        // Setup booking UI controls
         startDateBtn = findViewById(R.id.start_date_btn);
         endDateBtn = findViewById(R.id.end_date_btn);
         totalCostTv = findViewById(R.id.total_cost_tv);
@@ -124,7 +111,7 @@ public class CarDetailsActivity extends AppCompatActivity {
         endDateBtn.setOnClickListener(v -> showDatePicker(false));
 
         bookNowBtn.setOnClickListener(v -> {
-            // Ensure both dates are selected before proceeding
+            // Validation: Ensure both dates are picked
             if (startDate == null || endDate == null) {
                 Toast.makeText(this, R.string.please_select_dates, Toast.LENGTH_SHORT).show();
                 return;
@@ -134,8 +121,9 @@ public class CarDetailsActivity extends AppCompatActivity {
     }
 
     /**
-     * showBookingInfoDialog: Shows a pop-up to collect phone number and payment method.
-     * Calculates the downpayment (20%) and saves the booking upon confirmation.
+     * showBookingInfoDialog: Handles user input for phone, payment, and calculates tiered pricing.
+     * Tiered Pricing: Registered users get 10% off; Guests pay full price.
+     * Downpayment: 20% of the final total.
      */
     private void showBookingInfoDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_booking_info, null);
@@ -143,16 +131,42 @@ public class CarDetailsActivity extends AppCompatActivity {
         RadioGroup paymentGroup = dialogView.findViewById(R.id.payment_radio_group);
         TextView downpaymentTv = dialogView.findViewById(R.id.downpayment_summary);
 
-        // Calculate total and 20% downpayment
+        // Determine user type (Registered vs Guest)
+        com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+        boolean isGuest = user == null || user.isAnonymous() || "guest@renta.com".equals(user.getEmail());
+
+        // Cost and Discount Calculation
         double totalCost = calculateTotalCost();
+        double discount = 0;
+        
+        if (!isGuest) {
+            // Apply 10% promo for registered users
+            discount = totalCost * 0.10;
+            totalCost -= discount;
+        }
+
         double downPayment = totalCost * 0.20;
         String downPaymentFormatted = String.format(Locale.getDefault(), "₱%,.2f", downPayment);
-        downpaymentTv.setText(getString(R.string.downpayment_label, downPaymentFormatted));
+        
+        // Build summary text for the dialog
+        StringBuilder summary = new StringBuilder();
+        if (!isGuest) {
+            summary.append("Registered User Discount (10%): -₱").append(String.format(Locale.getDefault(), "%,.2f", discount)).append("\n");
+        } else {
+            summary.append("Guest User: No discounts available. Sign up to get 10% off!\n");
+        }
+        summary.append(getString(R.string.downpayment_label, downPaymentFormatted));
+        
+        downpaymentTv.setText(summary.toString());
 
+        final double finalTotalCost = totalCost;
+        final double finalDownPayment = downPayment;
+
+        // Create the confirmation dialog
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.confirm_booking)
                 .setView(dialogView)
-                .setPositiveButton(R.string.confirm_booking, null) // Set to null to override behavior below
+                .setPositiveButton(R.string.confirm_booking, null)
                 .setNegativeButton(R.string.cancel, null)
                 .create();
 
@@ -160,20 +174,19 @@ public class CarDetailsActivity extends AppCompatActivity {
             Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
             
-            // Stylize buttons for M3
-            positiveButton.setTextColor(getResources().getColor(android.R.color.black));
-            negativeButton.setTextColor(getResources().getColor(android.R.color.black));
+            // Stylize buttons
+            positiveButton.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+            negativeButton.setTextColor(ContextCompat.getColor(this, android.R.color.black));
 
             positiveButton.setOnClickListener(view -> {
-                String phone = phoneInput.getText().toString().trim();
+                String phone = phoneInput.getText() != null ? phoneInput.getText().toString().trim() : "";
                 TextInputLayout phoneLayout = dialogView.findViewById(R.id.phone_input_layout);
 
-                // Phone number validation (Philippine format)
+                // Validation: Check phone format
                 if (phone.isEmpty()) {
                     phoneLayout.setError(getString(R.string.error_empty_phone));
                     return;
                 }
-
                 if (!phone.matches("^(09|\\+639)\\d{9}$")) {
                     phoneLayout.setError(getString(R.string.error_invalid_phone));
                     return;
@@ -181,24 +194,25 @@ public class CarDetailsActivity extends AppCompatActivity {
 
                 phoneLayout.setError(null);
 
-                // Get selected payment method
+                // Identify selected payment method
                 int selectedId = paymentGroup.getCheckedRadioButtonId();
+                if (selectedId == -1) {
+                    Toast.makeText(CarDetailsActivity.this, "Please select a payment method", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 RadioButton selectedRb = dialogView.findViewById(selectedId);
                 String paymentMethod = selectedRb.getText().toString();
 
-                // Create and save the booking
-                Booking booking = new Booking(carName, carPriceStr, startDate, endDate, totalCost,
-                        downPayment, paymentMethod, phone);
-                new BookingManager(this).addBooking(booking);
+                // Create Booking object and pass it to information collection screen
+                Booking booking = new Booking(carName, carPriceStr, startDate, endDate, finalTotalCost,
+                        finalDownPayment, paymentMethod, phone);
+                booking.setGuestBooking(isGuest);
+                
+                Intent intent = new Intent(CarDetailsActivity.this, BookingDetailsActivity.class);
+                intent.putExtra("pending_booking", booking);
+                startActivity(intent);
 
-                // Trigger a system notification for the user
-                boolean permissionRequested = showNotification("Booking Confirmed", "Your rental for " + carName + " has been successfully processed.");
-
-                Toast.makeText(this, R.string.booking_confirmed, Toast.LENGTH_LONG).show();
                 dialog.dismiss();
-                if (!permissionRequested) {
-                    finish(); // Close activity and return to Home
-                }
             });
         });
 
@@ -206,8 +220,7 @@ public class CarDetailsActivity extends AppCompatActivity {
     }
 
     /**
-     * showDatePicker: Opens the Material Design date picker.
-     * @param isStartDate True if picking the start date, false for end date.
+     * showDatePicker: Displays MaterialDatePicker and updates selected timestamps.
      */
     private void showDatePicker(boolean isStartDate) {
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
@@ -227,14 +240,15 @@ public class CarDetailsActivity extends AppCompatActivity {
                 endDateBtn.setText(dateString);
             }
 
-            updateTotalCost(); // Update the cost display dynamically
+            // Dynamically update cost label based on date range
+            updateTotalCost();
         });
 
         datePicker.show(getSupportFragmentManager(), "DATE_PICKER");
     }
 
     /**
-     * Updates the UI with the calculated total rental cost.
+     * Updates the total cost display in the UI.
      */
     private void updateTotalCost() {
         if (startDate != null && endDate != null) {
@@ -246,78 +260,13 @@ public class CarDetailsActivity extends AppCompatActivity {
     }
 
     /**
-     * showNotification: Displays a system notification for booking confirmation.
-     * Handles notification channel creation and permission checks for Android 13+.
-     * @return true if a permission request was initiated, false otherwise.
-     */
-    private boolean showNotification(String title, String message) {
-        // Permission check for Android 13+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                pendingNotifTitle = title;
-                pendingNotifMessage = message;
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
-                return true;
-            }
-        }
-
-        sendActualNotification(title, message);
-        return false;
-    }
-
-    private void sendActualNotification(String title, String message) {
-        String channelId = "booking_channel";
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channelId)
-                .setSmallIcon(android.R.drawable.ic_dialog_info) // System icon is safer for SmallIcon
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-        try {
-            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
-        } catch (SecurityException e) {
-            // Should not happen if permission is granted
-        }
-    }
-
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "booking_channel",
-                    "Booking Notifications",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1001) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (pendingNotifTitle != null) {
-                    sendActualNotification(pendingNotifTitle, pendingNotifMessage);
-                }
-            }
-            finish(); // Now we can finish the activity
-        }
-    }
-
-    /**
-     * Calculates the total cost based on the number of days between start and end date.
-     * Minimum 1 day charge is applied.
+     * calculateTotalCost: Calculates the raw rental cost based on day count.
      */
     private double calculateTotalCost() {
         if (startDate != null && endDate != null) {
             long diff = endDate - startDate;
-            long days = diff / (24 * 60 * 60 * 1000); // Convert ms to days
-            if (days < 1) days = 1; // Minimum 1 day charge
+            long days = diff / (24 * 60 * 60 * 1000);
+            if (days < 1) days = 1; // Minimum charge is 1 day
             return days * dailyRate;
         }
         return 0;

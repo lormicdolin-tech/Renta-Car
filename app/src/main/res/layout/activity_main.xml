@@ -13,7 +13,6 @@
         android:orientation="vertical"
         android:background="@color/primary">
 
-        <!-- HEADER SECTION: Branding -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="280dp">
@@ -24,7 +23,6 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/bg" />
 
-            <!-- Dark Overlay for better logo contrast -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -39,7 +37,6 @@
                 android:elevation="8dp"/>
         </FrameLayout>
 
-        <!-- LOGIN CARD: Bottom Sheet Effect -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -71,7 +68,6 @@
                     android:textColor="@color/text_secondary"
                     android:layout_marginBottom="32dp" />
 
-                <!-- USERNAME INPUT -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/nameInputLayout"
                     android:layout_width="match_parent"
@@ -94,7 +90,6 @@
                         android:textColor="?attr/colorOnSurface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- PASSWORD INPUT -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/passwordInputLayout"
                     android:layout_width="match_parent"
@@ -118,7 +113,6 @@
                         android:textColor="?attr/colorOnSurface" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- LOGIN BUTTON -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/loginBtn"
                     android:layout_width="match_parent"
@@ -132,19 +126,19 @@
                     app:cornerRadius="12dp"
                     android:elevation="4dp"/>
 
-                <!-- GUEST LOGIN BUTTON -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/guestLoginBtn"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="56dp"
                     android:layout_marginTop="8dp"
-                    android:text="@string/login_as_guest"
+                    android:text="Login as Guest"
                     android:textAllCaps="false"
                     android:textSize="16sp"
-                    android:textColor="?attr/colorOnSurface" />
+                    app:cornerRadius="12dp" />
 
-                <!-- FOOTER -->
+
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -170,7 +164,6 @@
                         android:focusable="true"
                         android:background="?attr/selectableItemBackground"/>
                 </LinearLayout>
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

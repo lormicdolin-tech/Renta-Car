@@ -14,9 +14,11 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-// import com.google.firebase.auth.FirebaseAuth;
-// import com.google.firebase.auth.FirebaseUser;
-// import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * SignupActivity: Handles new user registration using Firebase Authentication.
@@ -28,13 +30,18 @@ public class SignupActivity extends AppCompatActivity {
     private TextInputEditText fullNameEdit, emailEdit, passwordEdit, confirmPasswordEdit;
     private MaterialButton signupBtn;
     private TextView loginBtn;
-    // private FirebaseAuth mAuth;
+    private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
+
+        // Initialize Firebase Auth and Database
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         // UI Component Initialization
         fullNameInputLayout = findViewById(R.id.fullNameInputLayout);
@@ -64,13 +71,33 @@ public class SignupActivity extends AppCompatActivity {
                 String email = emailEdit.getText().toString().trim();
                 String password = passwordEdit.getText().toString().trim();
 
-                // Save user locally for app state management (Bypassing Firebase for now)
-                UserManager userManager = new UserManager(this);
-                User newUser = new User(fullName, email, password);
-                userManager.saveUser(newUser);
+                // Create user with Firebase Auth
+                mAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                // Update profile with full name
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(fullName)
+                                    .build();
 
-                Toast.makeText(SignupActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
-                finish(); // Return to Login screen
+                                user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(updateTask -> {
+                                        // Save user details to Database
+                                        User newUser = new User(fullName, email);
+                                        mDatabase.child("users").child(user.getUid()).setValue(newUser)
+                                            .addOnCompleteListener(dbTask -> {
+                                                Toast.makeText(SignupActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
+                                                finish();
+                                            });
+                                    });
+                            }
+                        } else {
+                            Toast.makeText(SignupActivity.this, "Authentication failed: " + task.getException().getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
             }
         });
 

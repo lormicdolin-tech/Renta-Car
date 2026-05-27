@@ -26,4 +26,5 @@
     <color name="not_available_bg">#2C2C2C</color>
     <color name="not_available_text">#8E8E8E</color>
     <color name="available_green">#4CAF50</color>
+    <color name="error_red">#F44336</color>
 </resources>

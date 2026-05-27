@@ -40,7 +40,7 @@ public class UserManager {
         String json = sharedPreferences.getString(KEY_USER, null);
         if (json == null) {
             // Default guest user profile
-            return new User("Juan Dela Cruz", "juan@example.ph");
+            return new User("Guest User", "guest@renta.com");
         }
         return gson.fromJson(json, User.class);
     }

@@ -51,16 +51,19 @@ public class BookingsFragment extends Fragment {
     private void loadBookings() {
         if (getContext() == null) return;
         
-        List<Booking> bookings = new BookingManager(getContext()).getBookings();
-        if (bookings.isEmpty()) {
-            // Show "No bookings" message
-            recyclerView.setVisibility(View.GONE);
-            emptyState.setVisibility(View.VISIBLE);
-        } else {
-            // Show the list of bookings
-            recyclerView.setVisibility(View.VISIBLE);
-            emptyState.setVisibility(View.GONE);
-            recyclerView.setAdapter(new BookingAdapter(bookings));
-        }
+        new BookingManager(getContext()).getBookings(bookings -> {
+            if (!isAdded()) return; // Check if fragment is still attached
+            
+            if (bookings.isEmpty()) {
+                // Show "No bookings" message
+                recyclerView.setVisibility(View.GONE);
+                emptyState.setVisibility(View.VISIBLE);
+            } else {
+                // Show the list of bookings
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyState.setVisibility(View.GONE);
+                recyclerView.setAdapter(new BookingAdapter(bookings));
+            }
+        });
     }
 }

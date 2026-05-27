@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "433816500973",
+    "project_id": "renta-car-30a6f",
+    "storage_bucket": "renta-car-30a6f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:433816500973:android:18b0bd39d2904fd8eaeae4",
+        "android_client_info": {
+          "package_name": "com.example.renta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRF8LzcEbSvZVkQKhw1jwc0KAzx5MkYqw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

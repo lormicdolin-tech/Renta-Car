@@ -112,7 +112,7 @@
     <string name="start_date">Start Date</string>
     <string name="end_date">End Date</string>
     <string name="total_cost">Total Cost: %s</string>
-    <string name="booking_confirmed">Booking Confirmed!</string>
+    <string name="booking_confirmed">Booking Confirmed! Please visit the office to fill up the remaining info after paying the downpayment.</string>
     <string name="please_select_dates">Please select both start and end dates</string>
     <string name="total_paid">Total Paid</string>
     <string name="booking_information">Booking Information</string>
