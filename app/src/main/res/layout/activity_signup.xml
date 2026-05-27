@@ -28,12 +28,14 @@
                 android:layout_height="match_parent"
                 android:background="#40000000" />
 
-            <ImageView
+            <com.google.android.material.imageview.ShapeableImageView
                 android:layout_width="160dp"
                 android:layout_height="160dp"
                 android:layout_gravity="center"
                 android:layout_marginBottom="20dp"
                 android:src="@drawable/logo"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/RoundedSquare"
                 android:elevation="8dp"/>
         </FrameLayout>
 
@@ -191,7 +193,10 @@
                         android:text="@string/login"
                         android:textStyle="bold"
                         android:textColor="@color/black"
-                        android:padding="8dp"
+                        android:padding="12dp"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
                         android:background="?attr/selectableItemBackground"/>

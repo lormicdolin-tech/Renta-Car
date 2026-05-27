@@ -37,9 +37,10 @@
                 android:orientation="horizontal">
 
                 <ImageView
+                    android:id="@+id/theme_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_day"
+                    android:src="@drawable/ic_sun"
                     app:tint="?attr/colorOnSurface" />
 
                 <TextView
@@ -91,7 +92,7 @@
                 android:gravity="start|center_vertical"
                 android:paddingStart="16dp"
                 android:textColor="?attr/colorOnSurface"
-                app:icon="@android:drawable/ic_popup_reminder"
+                app:icon="@drawable/ic_notifications"
                 app:iconTint="?attr/colorOnSurface" />
 
         </LinearLayout>

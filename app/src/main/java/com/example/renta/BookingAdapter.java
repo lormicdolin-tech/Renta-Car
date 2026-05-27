@@ -1,15 +1,21 @@
 package com.example.renta;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,8 +23,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * BookingAdapter: A bridge between the list of Bookings and the RecyclerView in BookingsFragment.
- * It manages how each individual booking item is displayed in the list.
+ * BookingAdapter: A bridge between the list of Bookings and the RecyclerView.
+ * Manages display and interactions for booking records, supporting both User and Admin views.
  */
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
 
@@ -34,9 +40,6 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         this.isAdmin = isAdmin;
     }
 
-    /**
-     * Inflates the item layout (item_booking.xml) when a new row is needed.
-     */
     @NonNull
     @Override
     public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -44,69 +47,131 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         return new BookingViewHolder(view);
     }
 
-    /**
-     * Binds data from a Booking object to the UI elements in a specific row.
-     */
     @Override
     public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
         Booking booking = bookings.get(position);
         holder.carName.setText(booking.getCarName());
         
-        // Format dates from milliseconds to "MMM dd, yyyy"
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         String dateRange = sdf.format(new Date(booking.getStartDate())) + " - " + sdf.format(new Date(booking.getEndDate()));
         holder.dates.setText(dateRange);
         
         holder.paymentMethod.setText(booking.getPaymentMethod());
-        
-        // Format currency values with comma separators and peso sign
         holder.downPayment.setText(String.format(Locale.getDefault(), "₱%,.2f", booking.getDownPayment()));
         holder.totalCost.setText(String.format(Locale.getDefault(), "₱%,.2f", booking.getTotalCost()));
         
-        if (booking.getStatus() != null) {
-            holder.status.setText(booking.getStatus());
-            if (booking.getStatus().equals("Confirmed")) {
+        String status = booking.getStatus() != null ? booking.getStatus() : "Pending";
+        holder.status.setText(status);
+        holder.cancelBtn.setVisibility(View.GONE);
+
+        // Styling and visibility based on status
+        switch (status) {
+            case "Confirmed":
                 holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.available_green));
-            } else if (booking.getStatus().equals("Cancelled")) {
+                break;
+            case "Completed":
+                holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.colorPrimary));
+                // Allow users to remove completed bookings from history
+                if (!isAdmin) {
+                    holder.cancelBtn.setVisibility(View.VISIBLE);
+                    if (holder.cancelBtn instanceof MaterialButton) {
+                        ((MaterialButton) holder.cancelBtn).setText(R.string.remove);
+                    }
+                }
+                break;
+            case "Cancelled":
                 holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.error_red));
-            } else {
+                // Show "Remove" button for already cancelled bookings so users can delete them
+                if (!isAdmin) {
+                    holder.cancelBtn.setVisibility(View.VISIBLE);
+                    if (holder.cancelBtn instanceof MaterialButton) {
+                        ((MaterialButton) holder.cancelBtn).setText(R.string.remove);
+                    }
+                }
+                break;
+            case "Pending":
+            default:
                 holder.status.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_secondary));
-            }
+                // Show "Cancel" for pending bookings
+                if (!isAdmin) {
+                    holder.cancelBtn.setVisibility(View.VISIBLE);
+                    if (holder.cancelBtn instanceof MaterialButton) {
+                        ((MaterialButton) holder.cancelBtn).setText(R.string.cancel_action);
+                    }
+                }
+                break;
         }
+
+        holder.cancelBtn.setOnClickListener(v -> handleAction(v, booking));
 
         if (isAdmin) {
             holder.customerInfo.setVisibility(View.VISIBLE);
             String guestLabel = booking.isGuestBooking() ? " [GUEST]" : "";
-            
-            StringBuilder info = new StringBuilder();
-            info.append(booking.getCustomerName() != null ? booking.getCustomerName() : "Unknown").append(guestLabel).append("\n");
-            info.append("Phone: ").append(booking.getPhoneNumber()).append("\n");
-            info.append("License: ").append(booking.getLicenseNumber() != null ? booking.getLicenseNumber() : "N/A").append("\n");
-            info.append("Address: ").append(booking.getAddress() != null ? booking.getAddress() : "N/A");
-            
-            holder.customerInfo.setText(info.toString());
+            String info = (booking.getCustomerName() != null ? booking.getCustomerName() : "Unknown") + guestLabel + "\n" +
+                         "Phone: " + booking.getPhoneNumber() + "\n" +
+                         "License: " + (booking.getLicenseNumber() != null ? booking.getLicenseNumber() : "N/A") + "\n" +
+                         "Address: " + (booking.getAddress() != null ? booking.getAddress() : "N/A");
+            holder.customerInfo.setText(info);
             
             holder.deleteBtn.setVisibility(View.VISIBLE);
             holder.deleteBtn.setOnClickListener(v -> {
-                if (booking.getBookingId() != null) {
-                    FirebaseDatabase.getInstance().getReference().child("bookings")
-                        .child(booking.getBookingId()).removeValue();
-                }
+                new AlertDialog.Builder(v.getContext())
+                    .setTitle("Delete Booking")
+                    .setMessage("Permanently delete this record from the system?")
+                    .setPositiveButton("Delete", (d, w) -> deleteBookingPermanently(booking))
+                    .setNegativeButton("Cancel", null)
+                    .show();
             });
 
-            holder.itemView.setOnClickListener(v -> {
-                // Potential to add status update dialog here
-                showStatusUpdateDialog(v.getContext(), booking);
-            });
+            holder.itemView.setOnClickListener(v -> showStatusUpdateDialog(v.getContext(), booking));
         } else {
             holder.customerInfo.setVisibility(View.GONE);
             holder.deleteBtn.setVisibility(View.GONE);
-            holder.itemView.setOnClickListener(null);
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), BookingDetailViewActivity.class);
+                intent.putExtra("booking", booking);
+                v.getContext().startActivity(intent);
+            });
+        }
+    }
+
+    private void handleAction(View v, Booking booking) {
+        String currentStatus = booking.getStatus() != null ? booking.getStatus() : "Pending";
+        boolean isRemoval = "Cancelled".equals(currentStatus) || "Completed".equals(currentStatus);
+        String actionTitle = isRemoval ? v.getContext().getString(R.string.remove) : v.getContext().getString(R.string.cancel_action);
+        String message = isRemoval ? "Remove this record from your history?" : "Are you sure you want to cancel this booking?";
+
+        new AlertDialog.Builder(v.getContext())
+            .setTitle(actionTitle + " Booking")
+            .setMessage(message)
+            .setPositiveButton("Yes", (dialog, which) -> {
+                DatabaseReference ref = FirebaseConfig.getDatabase().getReference("bookings").child(booking.getBookingId());
+                if (isRemoval) {
+                    ref.removeValue().addOnSuccessListener(aVoid -> 
+                        Toast.makeText(v.getContext(), "Record removed", Toast.LENGTH_SHORT).show());
+                } else {
+                    ref.child("status").setValue("Cancelled").addOnSuccessListener(aVoid -> {
+                        Toast.makeText(v.getContext(), "Booking cancelled", Toast.LENGTH_SHORT).show();
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        if (user != null) {
+                            saveNotification(user.getUid(), "Booking Cancelled", 
+                                "You have cancelled your booking for " + booking.getCarName());
+                        }
+                    });
+                }
+            })
+            .setNegativeButton("No", null)
+            .show();
+    }
+
+    private void deleteBookingPermanently(Booking booking) {
+        if (booking.getBookingId() != null) {
+            FirebaseConfig.getDatabase().getReference("bookings").child(booking.getBookingId()).removeValue();
         }
     }
 
     private void showStatusUpdateDialog(android.content.Context context, Booking booking) {
-        String[] statuses = {"Pending", "Confirmed", "Cancelled"};
+        String[] statuses = {"Pending", "Confirmed", "Completed", "Cancelled"};
         int checkedItem = 0;
         for (int i = 0; i < statuses.length; i++) {
             if (statuses[i].equals(booking.getStatus())) {
@@ -115,13 +180,20 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             }
         }
 
-        new androidx.appcompat.app.AlertDialog.Builder(context)
+        new AlertDialog.Builder(context)
             .setTitle("Update Booking Status")
             .setSingleChoiceItems(statuses, checkedItem, (dialog, which) -> {
                 String newStatus = statuses[which];
                 if (booking.getBookingId() != null) {
-                    FirebaseDatabase.getInstance().getReference().child("bookings")
-                        .child(booking.getBookingId()).child("status").setValue(newStatus);
+                    FirebaseConfig.getDatabase().getReference("bookings")
+                        .child(booking.getBookingId()).child("status").setValue(newStatus)
+                        .addOnSuccessListener(aVoid -> {
+                            if (booking.getUserId() != null) {
+                                String title = "Booking " + newStatus;
+                                String message = "Your booking for " + booking.getCarName() + " is now " + newStatus.toLowerCase();
+                                saveNotification(booking.getUserId(), title, message);
+                            }
+                        });
                 }
                 dialog.dismiss();
             })
@@ -129,21 +201,23 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             .show();
     }
 
-    /**
-     * Returns the total number of bookings in the list.
-     */
+    private void saveNotification(String userId, String title, String message) {
+        DatabaseReference notifRef = FirebaseConfig.getDatabase().getReference("notifications").child(userId);
+        String id = notifRef.push().getKey();
+        if (id != null) {
+            Notification n = new Notification(id, userId, title, message, System.currentTimeMillis());
+            notifRef.child(id).setValue(n);
+        }
+    }
+
     @Override
     public int getItemCount() {
         return bookings.size();
     }
 
-    /**
-     * BookingViewHolder: Holds references to the views for a single booking item.
-     * This improves performance by avoiding frequent calls to findViewById.
-     */
     public static class BookingViewHolder extends RecyclerView.ViewHolder {
         TextView carName, dates, totalCost, paymentMethod, downPayment, status, customerInfo;
-        View deleteBtn;
+        View deleteBtn, cancelBtn;
 
         public BookingViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -155,6 +229,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             status = itemView.findViewById(R.id.booking_status);
             deleteBtn = itemView.findViewById(R.id.booking_delete_btn);
             customerInfo = itemView.findViewById(R.id.booking_customer_info);
+            cancelBtn = itemView.findViewById(R.id.booking_cancel_btn);
         }
     }
 }

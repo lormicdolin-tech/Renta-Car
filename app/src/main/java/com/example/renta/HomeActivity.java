@@ -3,16 +3,19 @@ package com.example.renta;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -27,10 +30,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private UserManager userManager;
     private TextView navHeaderName;
     private TextView navHeaderEmail;
+    private ImageView navHeaderImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        applyDarkMode();
         setContentView(R.layout.activity_home);
 
         // Initialize UI components for navigation controls
@@ -48,6 +53,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         View headerView = navigationView.getHeaderView(0);
         navHeaderName = headerView.findViewById(R.id.nav_header_name);
         navHeaderEmail = headerView.findViewById(R.id.nav_header_email);
+        navHeaderImage = headerView.findViewById(R.id.nav_header_image);
         updateNavHeader();
 
         navigationView.setNavigationItemSelectedListener(this);
@@ -74,12 +80,21 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        // Load the HomeFragment by default on first start
+        // Load the appropriate fragment based on Intent or default to HomeFragment
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new HomeFragment()).commit();
-            navigationView.setCheckedItem(R.id.nav_home);
-            bottomNavigationView.setSelectedItemId(R.id.nav_home);
+            String navigateTo = getIntent().getStringExtra("navigate_to");
+            if ("bookings".equals(navigateTo)) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new BookingsFragment()).commit();
+                navigationView.setCheckedItem(R.id.nav_bookings);
+                bottomNavigationView.setSelectedItemId(R.id.nav_bookings);
+                if (getSupportActionBar() != null) getSupportActionBar().setTitle(R.string.nav_bookings);
+            } else {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new HomeFragment()).commit();
+                navigationView.setCheckedItem(R.id.nav_home);
+                bottomNavigationView.setSelectedItemId(R.id.nav_home);
+            }
         }
 
         // Handle Bottom Navigation item selection
@@ -92,7 +107,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             
             if (itemId == R.id.nav_home) {
                 selectedFragment = new HomeFragment();
-                if (getSupportActionBar() != null) getSupportActionBar().setTitle(R.string.nav_home);
+                updateHomeTitle();
             } else if (itemId == R.id.nav_bookings) {
                 selectedFragment = new BookingsFragment();
                 if (getSupportActionBar() != null) getSupportActionBar().setTitle(R.string.nav_bookings);
@@ -126,8 +141,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private void checkAdminStatus(NavigationView navigationView) {
         com.google.firebase.auth.FirebaseUser firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null && !firebaseUser.isAnonymous()) {
-            com.google.firebase.database.FirebaseDatabase.getInstance().getReference()
-                .child("users").child(firebaseUser.getUid())
+            FirebaseConfig.getDatabase()
+                .getReference("users").child(firebaseUser.getUid())
                 .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull com.google.firebase.database.DataSnapshot snapshot) {
@@ -149,13 +164,67 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
      */
     private void updateNavHeader() {
         com.google.firebase.auth.FirebaseUser firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser != null && firebaseUser.isAnonymous()) {
-            if (navHeaderName != null) navHeaderName.setText("Guest User");
-            if (navHeaderEmail != null) navHeaderEmail.setText("Anonymous Account");
+        if (firebaseUser != null) {
+            if (firebaseUser.isAnonymous()) {
+                if (navHeaderName != null) navHeaderName.setText("Guest User");
+                if (navHeaderEmail != null) navHeaderEmail.setText("Anonymous Account");
+                if (navHeaderImage != null) navHeaderImage.setImageResource(R.drawable.logo);
+            } else {
+                String name = firebaseUser.getDisplayName();
+                String email = firebaseUser.getEmail();
+                
+                if (name == null || name.isEmpty()) {
+                    User user = userManager.getUser();
+                    name = user.getName();
+                }
+                
+                if (navHeaderName != null) navHeaderName.setText(name);
+                if (navHeaderEmail != null) navHeaderEmail.setText(email);
+                
+                if (navHeaderImage != null) {
+                    android.net.Uri photoUrl = firebaseUser.getPhotoUrl();
+                    if (photoUrl != null) {
+                        Glide.with(this).load(photoUrl).placeholder(R.drawable.logo).into(navHeaderImage);
+                    } else {
+                        navHeaderImage.setImageResource(R.drawable.logo);
+                    }
+                }
+            }
+        }
+        
+        // Update Toolbar title if Home is selected
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null && bottomNavigationView.getSelectedItemId() == R.id.nav_home) {
+            updateHomeTitle();
+        }
+    }
+
+    /**
+     * updateHomeTitle: Updates the toolbar title with the user's first name
+     * when on the home screen.
+     */
+    private void updateHomeTitle() {
+        if (getSupportActionBar() == null) return;
+        
+        com.google.firebase.auth.FirebaseUser firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            if (firebaseUser.isAnonymous()) {
+                getSupportActionBar().setTitle("Guest");
+            } else {
+                String name = firebaseUser.getDisplayName();
+                if (name == null || name.isEmpty()) {
+                    User user = userManager.getUser();
+                    name = user.getName();
+                }
+                
+                String firstName = name;
+                if (firstName != null && firstName.contains(" ")) {
+                    firstName = firstName.split(" ")[0];
+                }
+                getSupportActionBar().setTitle(firstName);
+            }
         } else {
-            User user = userManager.getUser();
-            if (navHeaderName != null) navHeaderName.setText(user.getName());
-            if (navHeaderEmail != null) navHeaderEmail.setText(user.getEmail());
+            getSupportActionBar().setTitle(R.string.nav_home);
         }
     }
 
@@ -170,6 +239,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if (itemId == R.id.nav_home || itemId == R.id.nav_bookings || itemId == R.id.nav_profile || itemId == R.id.nav_location) {
             // Forward main navigation items to the bottom navigation handler
             bottomNavigationView.setSelectedItemId(itemId);
+        } else if (itemId == R.id.nav_notifications) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new NotificationsFragment()).commit();
+            if (getSupportActionBar() != null) getSupportActionBar().setTitle("Notifications");
         } else if (itemId == R.id.nav_settings) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new SettingsFragment()).commit();
@@ -179,6 +252,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             android.content.Intent intent = new android.content.Intent(this, AdminActivity.class);
             startActivity(intent);
         } else if (itemId == R.id.nav_logout) {
+            // Disable auto-login on manual logout
+            android.content.SharedPreferences prefs = getSharedPreferences("renta_prefs", android.content.Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("auto_login", false).apply();
+
             // Perform Firebase sign-out and return to login screen
             com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
             android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
@@ -191,5 +268,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         // Close side drawer after selection
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void applyDarkMode() {
+        android.content.SharedPreferences prefs = getSharedPreferences("renta_prefs", android.content.Context.MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 }

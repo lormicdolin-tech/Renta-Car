@@ -74,12 +74,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
-                android:hint="Driver's License Number">
+                android:hint="Driver's License Number"
+                app:helperText="Example: L01-12-345678"
+                app:helperTextTextColor="@color/primary"
+                app:startIconDrawable="@drawable/ic_profile"
+                app:startIconTint="@color/primary">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/licenseEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textCapCharacters"/>
+                    android:inputType="textCapCharacters"
+                    android:maxLength="13"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -90,8 +95,8 @@
                 android:textAllCaps="false"
                 android:textSize="16sp"
                 app:cornerRadius="12dp"
-                android:backgroundTint="@color/black"
-                android:textColor="@color/primary"/>
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"/>
 
         </LinearLayout>
     </ScrollView>

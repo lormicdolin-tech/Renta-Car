@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // Update admin flag in database on every successful login to be safe
                     String uid = mAuth.getCurrentUser().getUid();
-                    FirebaseDatabase.getInstance().getReference().child("users")
+                    FirebaseConfig.getDatabase().getReference().child("users")
                         .child(uid).child("isAdmin").setValue(true);
                     proceedToAdmin();
                 } else {
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                             .addOnCompleteListener(this, createStack -> {
                                 if (createStack.isSuccessful()) {
                                     String uid = mAuth.getCurrentUser().getUid();
-                                    FirebaseDatabase.getInstance().getReference().child("users")
+                                    FirebaseConfig.getDatabase().getReference().child("users")
                                         .child(uid).child("isAdmin").setValue(true);
                                     proceedToAdmin();
                                 } else {
@@ -125,28 +125,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleGuestLogin() {
-        String guestEmail = "guest@renta.com";
-        String guestPass = "guest123";
-
-        mAuth.signInWithEmailAndPassword(guestEmail, guestPass)
+        // Try Anonymous Login first (best for unique user IDs)
+        mAuth.signInAnonymously()
             .addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
-                    proceedToHome("Browsing as Guest");
+                    proceedToHome("Logged in as Guest");
                 } else {
-                    // Create guest account if it doesn't exist
-                    mAuth.createUserWithEmailAndPassword(guestEmail, guestPass)
-                        .addOnCompleteListener(this, createStack -> {
-                            if (createStack.isSuccessful()) {
-                                proceedToHome("Guest session started");
+                    // If Anonymous fails, try the shared guest account as backup
+                    String guestEmail = "guest@renta.com";
+                    String guestPass = "guest123";
+
+                    mAuth.signInWithEmailAndPassword(guestEmail, guestPass)
+                        .addOnCompleteListener(this, loginTask -> {
+                            if (loginTask.isSuccessful()) {
+                                proceedToHome("Browsing as Guest");
                             } else {
-                                // Fallback to Anonymous Auth (Must be enabled in Firebase Console)
-                                mAuth.signInAnonymously().addOnCompleteListener(anonTask -> {
-                                    if (anonTask.isSuccessful()) {
-                                        proceedToHome("Logged in as Anonymous Guest");
-                                    } else {
-                                        Toast.makeText(MainActivity.this, "Guest access unavailable. Check connection.", Toast.LENGTH_LONG).show();
-                                    }
-                                });
+                                // Try to create the shared guest account if it doesn't exist
+                                mAuth.createUserWithEmailAndPassword(guestEmail, guestPass)
+                                    .addOnCompleteListener(this, createStack -> {
+                                        if (createStack.isSuccessful()) {
+                                            proceedToHome("Guest session started");
+                                        } else {
+                                            String errorMsg = task.getException() != null ? task.getException().getMessage() : "Connection Error";
+                                            android.util.Log.e("RentA_Login", "Guest login failed: " + errorMsg);
+                                            Toast.makeText(MainActivity.this, "Guest access unavailable: " + errorMsg, Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                             }
                         });
                 }
@@ -154,6 +158,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void proceedToAdmin() {
+        SharedPreferences prefs = getSharedPreferences("renta_prefs", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("auto_login", true).putBoolean("is_admin", true).apply();
+
         Toast.makeText(this, "Admin Mode Active", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, AdminActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -162,6 +169,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void proceedToHome(String msg) {
+        SharedPreferences prefs = getSharedPreferences("renta_prefs", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("auto_login", true).putBoolean("is_admin", false).apply();
+
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,9 +30,17 @@ public class SettingsFragment extends Fragment {
         
         boolean isDarkMode = prefs.getBoolean(KEY_DARK_MODE, false);
         darkModeSwitch.setChecked(isDarkMode);
+        
+        ImageView themeIcon = view.findViewById(R.id.theme_icon);
+        if (themeIcon != null) {
+            themeIcon.setImageResource(isDarkMode ? R.drawable.ic_moon : R.drawable.ic_sun);
+        }
 
         darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean(KEY_DARK_MODE, isChecked).apply();
+            if (themeIcon != null) {
+                themeIcon.setImageResource(isChecked ? R.drawable.ic_moon : R.drawable.ic_sun);
+            }
             if (isChecked) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             } else {

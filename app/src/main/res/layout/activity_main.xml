@@ -21,20 +21,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/bg" />
+                android:src="@drawable/bg"
+                android:contentDescription="@null" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#40000000" />
 
-            <ImageView
+            <com.google.android.material.imageview.ShapeableImageView
                 android:layout_width="160dp"
                 android:layout_height="160dp"
                 android:layout_gravity="center"
                 android:layout_marginBottom="20dp"
                 android:src="@drawable/logo"
-                android:elevation="8dp"/>
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/RoundedSquare"
+                android:elevation="8dp"
+                android:contentDescription="@string/app_name" />
         </FrameLayout>
 
         <com.google.android.material.card.MaterialCardView
@@ -132,7 +136,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginTop="8dp"
-                    android:text="Login as Guest"
+                    android:text="@string/login_as_guest"
                     android:textAllCaps="false"
                     android:textSize="16sp"
                     app:cornerRadius="12dp" />
@@ -158,8 +162,11 @@
                         android:layout_height="wrap_content"
                         android:text="@string/signup"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        android:padding="8dp"
+                        android:textColor="@color/primary"
+                        android:padding="12dp"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
                         android:background="?attr/selectableItemBackground"/>

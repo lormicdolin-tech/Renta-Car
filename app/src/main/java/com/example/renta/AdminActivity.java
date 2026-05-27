@@ -6,6 +6,7 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,9 +33,10 @@ public class AdminActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        applyDarkMode();
         setContentView(R.layout.activity_admin);
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase = FirebaseConfig.getDatabase().getReference();
 
         bookingsRv = findViewById(R.id.admin_bookings_rv);
         carsRv = findViewById(R.id.admin_cars_rv);
@@ -69,7 +71,44 @@ public class AdminActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {}
         });
 
+        findViewById(R.id.admin_toolbar).setOnClickListener(v -> {
+            // Optional: Add double tap or long press for secret logout? 
+            // Better to add a menu.
+        });
+
+        // Add back button support to return to Home if needed, 
+        // but typically Admin is a separate flow.
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.admin_toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
+
         loadAllData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        menu.add(0, 1, 0, "Logout").setIcon(R.drawable.ic_logout);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if (item.getItemId() == 1) {
+            // Disable auto-login
+            android.content.SharedPreferences prefs = getSharedPreferences("renta_prefs", android.content.Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("auto_login", false).apply();
+
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
+            android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
+            intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void loadAllData() {
@@ -124,5 +163,11 @@ public class AdminActivity extends AppCompatActivity {
             Car car = new Car(id, names[i], prices[i], "Description for " + names[i], "Gas/Diesel", "5-15 Persons", "Auto/Manual", "Pristine", images[i], true);
             mDatabase.child("cars").child(id).setValue(car);
         }
+    }
+
+    private void applyDarkMode() {
+        android.content.SharedPreferences prefs = getSharedPreferences("renta_prefs", android.content.Context.MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 }

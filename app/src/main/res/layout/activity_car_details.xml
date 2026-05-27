@@ -33,7 +33,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                app:navigationIcon="@android:drawable/ic_menu_revert" />
+                app:navigationIcon="@drawable/ic_revert" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -112,7 +112,7 @@
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_fuel"
                         android:contentDescription="@string/fuel_icon_desc"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="@color/available_green" />
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -146,7 +146,7 @@
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_seats"
                         android:contentDescription="@string/seats_icon_desc"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="@color/available_green" />
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -179,7 +179,7 @@
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_transmission"
                         android:contentDescription="@string/transmission_icon_desc"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="@color/available_green" />
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -212,7 +212,7 @@
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_condition"
                         android:contentDescription="@string/condition_icon_desc"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="@color/available_green" />
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -258,7 +258,7 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="@string/start_date"
-                    app:icon="@android:drawable/ic_menu_my_calendar" />
+                    app:icon="@drawable/ic_calendar" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/end_date_btn"
@@ -268,7 +268,7 @@
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="@string/end_date"
-                    app:icon="@android:drawable/ic_menu_my_calendar" />
+                    app:icon="@drawable/ic_calendar" />
 
             </LinearLayout>
 

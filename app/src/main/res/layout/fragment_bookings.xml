@@ -15,6 +15,32 @@
         android:textColor="?attr/colorOnBackground"
         android:layout_margin="16dp"/>
 
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/booking_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="#4CAF50"
+        app:tabSelectedTextColor="#4CAF50"
+        app:tabTextAppearance="@style/TextAppearance.MaterialComponents.Subtitle2">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upcoming" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Completed" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancelled" />
+    </com.google.android.material.tabs.TabLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -37,7 +63,7 @@
             <ImageView
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:src="@android:drawable/ic_menu_agenda"
+                android:src="@drawable/ic_bookings"
                 android:contentDescription="@string/nav_bookings"
                 android:alpha="0.3" />
 

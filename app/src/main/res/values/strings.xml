@@ -35,13 +35,24 @@
     <string name="nav_logout">Logout</string>
 
     <!-- Home Fragment Strings -->
+    <string name="welcome_title">Welcome to RentA</string>
+    <string name="welcome_subtitle">Find the perfect ride for your trip</string>
+    <string name="category_all">All</string>
+    <string name="category_sedan">Sedan</string>
+    <string name="category_suv">SUV</string>
+    <string name="category_mpv">MPV</string>
+    <string name="category_van">Van</string>
+    <string name="special_offers">Special Offers</string>
+    <string name="offer_discount">Get 10%% off</string>
+    <string name="offer_subtitle">on your first booking!</string>
+    <string name="book_now">BOOK NOW</string>
     <string name="available_cars">Available Cars</string>
     <string name="car_1_name">Toyota Vios</string>
     <string name="car_1_desc">Reliable 5-seater sedan, perfect for city driving and fuel efficiency.</string>
     <string name="car_1_price">₱2,000/day</string>
 
     <string name="car_2_name">Mitsubishi Mirage G4</string>
-    <string name="car_2_desc">Compact and extremely fuel-efficient, ideal for budget-conscious travelers.</string>
+    <string name="car_2_desc">Compact and fuel-efficient sedan, ideal for budget-conscious travelers.</string>
     <string name="car_2_price">₱1,800/day</string>
 
     <string name="car_3_name">Toyota Innova</string>
@@ -53,7 +64,7 @@
     <string name="car_4_price">₱5,000/day</string>
 
     <string name="car_5_name">Toyota Wigo</string>
-    <string name="car_5_desc">Nimble city hatchback, easy to park and very economical on gas.</string>
+    <string name="car_5_desc">Nimble city sedan/hatchback, easy to park and very economical on gas.</string>
     <string name="car_5_price">₱1,500/day</string>
 
     <string name="car_6_name">Nissan NV350 Urvan</string>
@@ -67,21 +78,43 @@
     <string name="not_available">Not Available</string>
     <string name="available">Available</string>
     <string name="details_button">Details</string>
+    <string name="search_hint">Search brand or type (e.g. Toyota, SUV)</string>
 
     <!-- Bookings Fragment Strings -->
-    <string name="my_bookings_title">Current Bookings</string>
+    <string name="my_bookings_title">My Bookings</string>
     <string name="no_bookings">You have no active bookings.</string>
+    <string name="tab_upcoming">Upcoming</string>
+    <string name="tab_completed">Completed</string>
+    <string name="tab_cancelled">Cancelled</string>
+    <string name="booking_confirmed_title">Your booking is confirmed!</string>
+    <string name="booking_id_label">Booking ID</string>
+    <string name="booking_details_sent">We\'ve sent you the details to %s</string>
+    <string name="booking_details_history">Visit My Bookings to see your\nbooking details.</string>
+    <string name="view_booking">View Booking</string>
+    <string name="view_details">View Details</string>
+    <string name="remove">Remove</string>
+    <string name="cancel_action">Cancel</string>
+    <string name="booking_id_format">ID: %s</string>
+    <string name="license_format">License: %s</string>
+    <string name="date_range_format">%1$s - %2$s</string>
 
     <!-- Profile Fragment Strings -->
-    <string name="profile_title">User Profile</string>
-    <string name="profile_name">John Doe</string>
-    <string name="profile_email">john.doe@example.com</string>
-    <string name="edit_profile">Edit Profile</string>
+    <string name="profile_title">Profile</string>
+    <string name="menu_personal_info">Personal Information</string>
+    <string name="menu_payment_methods">Payment Methods</string>
+    <string name="menu_documents">Documents</string>
+    <string name="menu_notifications">Notifications</string>
+    <string name="menu_help_support">Help and Support</string>
+    <string name="logout">Logout</string>
+    <string name="logout_confirm">Are you sure you want to logout?</string>
+    <string name="notifications_icon_desc">Notifications</string>
+    <string name="menu_arrow_desc">Go to %s</string>
+    <string name="initials_placeholder">\?\?</string>
     <string name="edit_profile_title">Edit Profile</string>
     <string name="hint_full_name">Full Name</string>
     <string name="hint_email">Email Address</string>
     <string name="account_statistics">Account Statistics</string>
-    <string name="stats_rentals_count">12</string>
+    <string name="stats_rentals_count">0</string>
     <string name="stats_rentals_label">Rentals</string>
     <string name="stats_rating_value">4.9</string>
     <string name="stats_rating_label">Rating</string>

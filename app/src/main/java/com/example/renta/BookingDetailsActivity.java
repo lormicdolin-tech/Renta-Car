@@ -43,11 +43,14 @@ public class BookingDetailsActivity extends AppCompatActivity {
         licenseLayout = findViewById(R.id.licenseLayout);
         MaterialButton completeBtn = findViewById(R.id.completeBookingBtn);
 
-        // Pre-fill name if registered user
+        // Force the app to use the regional database
+        final com.google.firebase.database.FirebaseDatabase dbInit = FirebaseConfig.getDatabase();
+        dbInit.goOnline();
+
         if (!pendingBooking.isGuestBooking()) {
             com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
             if (user != null) {
-                com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users")
+                dbInit.getReference("users")
                     .child(user.getUid()).child("name").get().addOnSuccessListener(snapshot -> {
                         if (snapshot.exists()) {
                             nameEdit.setText(snapshot.getValue(String.class));
@@ -74,7 +77,20 @@ public class BookingDetailsActivity extends AppCompatActivity {
                 pendingBooking.setAddress(addressEdit.getText().toString().trim());
                 pendingBooking.setLicenseNumber(licenseEdit.getText().toString().trim().toUpperCase());
 
-                // Add a local timeout handler with a more generous window (30 seconds)
+                // Use regional instance with explicit URL monitoring
+                com.google.firebase.database.FirebaseDatabase db = FirebaseConfig.getDatabase();
+                
+                android.util.Log.d("RentA_Booking", "Final check before save to: " + FirebaseConfig.PRIMARY_URL);
+                
+                db.getReference(".info/connected").get().addOnCompleteListener(task -> {
+                    boolean connected = task.isSuccessful() && Boolean.TRUE.equals(task.getResult().getValue(Boolean.class));
+                    if (!connected) {
+                        runOnUiThread(() -> Toast.makeText(BookingDetailsActivity.this, "Still Offline. Checking internet...", Toast.LENGTH_SHORT).show());
+                        db.goOffline();
+                        db.goOnline();
+                    }
+                });
+
                 new android.os.Handler().postDelayed(() -> {
                     if (!isFinishing() && !completeBtn.isEnabled()) {
                         completeBtn.setEnabled(true);
@@ -91,21 +107,28 @@ public class BookingDetailsActivity extends AppCompatActivity {
                     }
                 }, 30000); 
 
-                new BookingManager(this).addBooking(pendingBooking, (success, message) -> {
+                new BookingManager(this).addBooking(pendingBooking, (success, result) -> {
                     if (isFinishing()) return;
                     
                     if (success) {
-                        android.util.Log.d("RentA_Booking", "Booking saved successfully");
-                        Toast.makeText(this, "Booking Successful! Visit office for next steps.", Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(this, HomeActivity.class);
+                        android.util.Log.d("RentA_Booking", "Booking saved successfully with ID: " + result);
+                        String email = "";
+                        com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                        if (user != null) {
+                            email = user.getEmail();
+                        }
+
+                        Intent intent = new Intent(this, BookingConfirmationActivity.class);
+                        intent.putExtra("booking_id", result);
+                        intent.putExtra("email", email);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
                     } else {
-                        android.util.Log.e("RentA_Booking", "Save failed: " + message);
+                        android.util.Log.e("RentA_Booking", "Save failed: " + result);
                         completeBtn.setEnabled(true);
                         completeBtn.setText("Confirm and Finalize");
-                        Toast.makeText(this, "Error: " + message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Error: " + result, Toast.LENGTH_LONG).show();
                     }
                 });
             }

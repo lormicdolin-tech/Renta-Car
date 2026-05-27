@@ -33,7 +33,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:padding="8dp"
-                    android:src="@android:drawable/ic_dialog_map"
+                    android:src="@drawable/ic_map"
                     app:tint="?attr/colorPrimary"
                     android:contentDescription="@string/location_marker_desc" />
             </com.google.android.material.card.MaterialCardView>
@@ -90,7 +90,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_mylocation"
+                            android:src="@drawable/ic_my_location"
                             app:tint="?attr/colorPrimary"
                             android:contentDescription="@string/address_icon_desc" />
                         <TextView
@@ -110,7 +110,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_call"
+                            android:src="@drawable/ic_call"
                             app:tint="?attr/colorPrimary"
                             android:contentDescription="@string/phone_icon_desc" />
                         <TextView
@@ -129,7 +129,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
+                            android:src="@drawable/ic_history"
                             app:tint="?attr/colorPrimary"
                             android:contentDescription="@string/hours_icon_desc" />
                         <TextView
@@ -146,7 +146,7 @@
                         android:layout_height="56dp"
                         android:layout_marginTop="32dp"
                         android:text="@string/get_directions"
-                        app:icon="@android:drawable/ic_menu_directions"
+                        app:icon="@drawable/ic_location"
                         app:cornerRadius="12dp" />
 
                 </LinearLayout>

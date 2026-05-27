@@ -32,7 +32,7 @@ public class AdminCarAdapter extends RecyclerView.Adapter<AdminCarAdapter.CarVie
     public AdminCarAdapter(List<Car> carList) {
         this.carList = carList;
         // Reference to the 'cars' node in the database
-        this.mDatabase = FirebaseDatabase.getInstance().getReference().child("cars");
+        this.mDatabase = FirebaseConfig.getDatabase().getReference().child("cars");
     }
 
     @NonNull

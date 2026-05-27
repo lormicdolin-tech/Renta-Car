@@ -10,28 +10,40 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.tabs.TabLayout;
+
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * BookingsFragment: Displays the user's rental history.
- * It uses a RecyclerView to show a list of bookings and an empty state 
- * view when no bookings are found.
- */
 public class BookingsFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private View emptyState;
+    private TabLayout tabLayout;
+    private List<Booking> allBookings = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_bookings, container, false);
 
         recyclerView = view.findViewById(R.id.bookings_rv);
         emptyState = view.findViewById(R.id.empty_state);
+        tabLayout = view.findViewById(R.id.booking_tabs);
 
-        // Initial load of bookings
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterBookings(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
         loadBookings();
 
         return view;
@@ -40,30 +52,53 @@ public class BookingsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh the list whenever the fragment becomes visible again
         loadBookings();
     }
 
-    /**
-     * loadBookings: Fetches the list of bookings from BookingManager.
-     * Toggles between the list view and empty state view based on results.
-     */
     private void loadBookings() {
         if (getContext() == null) return;
         
         new BookingManager(getContext()).getBookings(bookings -> {
-            if (!isAdded()) return; // Check if fragment is still attached
+            if (!isAdded()) return;
             
-            if (bookings.isEmpty()) {
-                // Show "No bookings" message
-                recyclerView.setVisibility(View.GONE);
-                emptyState.setVisibility(View.VISIBLE);
-            } else {
-                // Show the list of bookings
-                recyclerView.setVisibility(View.VISIBLE);
-                emptyState.setVisibility(View.GONE);
-                recyclerView.setAdapter(new BookingAdapter(bookings));
-            }
+            this.allBookings = bookings;
+            filterBookings(tabLayout.getSelectedTabPosition());
         });
+    }
+
+    private void filterBookings(int tabPosition) {
+        List<Booking> filteredList = new ArrayList<>();
+        
+        for (Booking booking : allBookings) {
+            String status = booking.getStatus();
+            if (status == null) status = "Pending";
+
+            switch (tabPosition) {
+                case 0: // Upcoming (Pending & Confirmed)
+                    if (status.equalsIgnoreCase("Pending") || status.equalsIgnoreCase("Confirmed")) {
+                        filteredList.add(booking);
+                    }
+                    break;
+                case 1: // Completed
+                    if (status.equalsIgnoreCase("Completed")) {
+                        filteredList.add(booking);
+                    }
+                    break;
+                case 2: // Cancelled
+                    if (status.equalsIgnoreCase("Cancelled")) {
+                        filteredList.add(booking);
+                    }
+                    break;
+            }
+        }
+
+        if (filteredList.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyState.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyState.setVisibility(View.GONE);
+            recyclerView.setAdapter(new BookingAdapter(filteredList));
+        }
     }
 }

@@ -25,7 +25,7 @@
                 android:background="@color/white"
                 app:title="@string/nav_home"
                 app:titleTextColor="@color/black"
-                app:navigationIcon="@android:drawable/ic_menu_sort_by_size"
+                app:navigationIcon="@drawable/ic_menu"
                 app:layout_scrollFlags="scroll|enterAlways" />
         </com.google.android.material.appbar.AppBarLayout>
 

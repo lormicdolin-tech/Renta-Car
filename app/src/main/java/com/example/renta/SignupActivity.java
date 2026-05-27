@@ -1,12 +1,15 @@
 package com.example.renta;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,12 +39,13 @@ public class SignupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        applyDarkMode();
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
 
-        // Initialize Firebase Auth and Database
+        // Initialize Firebase Auth and Database with regional URL
         mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase = FirebaseConfig.getDatabase().getReference();
 
         // UI Component Initialization
         fullNameInputLayout = findViewById(R.id.fullNameInputLayout);
@@ -88,7 +92,16 @@ public class SignupActivity extends AppCompatActivity {
                                         User newUser = new User(fullName, email);
                                         mDatabase.child("users").child(user.getUid()).setValue(newUser)
                                             .addOnCompleteListener(dbTask -> {
+                                                // Enable auto-login for the newly created account
+                                                android.content.SharedPreferences prefs = getSharedPreferences("renta_prefs", android.content.Context.MODE_PRIVATE);
+                                                prefs.edit().putBoolean("auto_login", true).putBoolean("is_admin", false).apply();
+
                                                 Toast.makeText(SignupActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
+                                                
+                                                // Proceed to HomeActivity directly after signup
+                                                Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                                startActivity(intent);
                                                 finish();
                                             });
                                     });
@@ -159,5 +172,11 @@ public class SignupActivity extends AppCompatActivity {
         }
 
         return isValid;
+    }
+
+    private void applyDarkMode() {
+        SharedPreferences prefs = getSharedPreferences("renta_prefs", Context.MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 }

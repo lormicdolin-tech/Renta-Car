@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand Colors (Lime & Black) -->
-    <color name="primary">#D6F04A</color>
-    <color name="onPrimary">#000000</color>
-    <color name="primaryContainer">#E2F775</color>
-    <color name="onPrimaryContainer">#1A1E00</color>
+    <!-- Brand Colors (Green & Black) -->
+    <color name="primary">#4CAF50</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#C8E6C9</color>
+    <color name="onPrimaryContainer">#1B5E20</color>
 
     <color name="secondary">#5D6248</color>
     <color name="onSecondary">#FFFFFF</color>
@@ -17,8 +17,8 @@
     <color name="text_secondary">#757575</color>
     <color name="divider_color">#EEEEEE</color>
 
-    <color name="lime">#D6F04A</color>
-    <color name="lime_dark">#B7D93D</color>
+    <color name="lime">#4CAF50</color>
+    <color name="lime_dark">#388E3C</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 
@@ -27,4 +27,5 @@
     <color name="not_available_text">#8E8E8E</color>
     <color name="available_green">#4CAF50</color>
     <color name="error_red">#F44336</color>
+    <color name="colorPrimary">#4CAF50</color>
 </resources>
